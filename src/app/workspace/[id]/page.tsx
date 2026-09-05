@@ -16,12 +16,20 @@ interface Quotation {
   lines: { product: { name: string; category: string }; qty: number; unitPrice: number; discountPct: number; lineTotal: number }[];
 }
 
+interface SplitLine {
+  productName: string;
+  requestedQty: number;
+  allocations: { warehouseName: string; qty: number }[];
+  backorderQty: number;
+}
+
 export default function QuotationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { status } = useSession();
   const router = useRouter();
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [split, setSplit] = useState<SplitLine[] | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -34,7 +42,13 @@ export default function QuotationDetailPage() {
       .then(async (response) => {
         const data = await response.json();
         if (response.ok) {
-          setQuotation((data.quotations || []).find((item: Quotation) => item.id === id) || null);
+          const found = (data.quotations || []).find((item: Quotation) => item.id === id) || null;
+          setQuotation(found);
+          if (found && (found.status === "APPROVED" || found.status === "CONFIRMED")) {
+            const splitRes = await fetch(`/api/quotations/${id}/warehouse-split`);
+            const splitData = await splitRes.json();
+            if (splitRes.ok) setSplit(splitData.split);
+          }
         }
       })
       .catch(() => setQuotation(null))
@@ -119,6 +133,33 @@ export default function QuotationDetailPage() {
               ))}
             </div>
             <p className="text-xs text-blue-600 mt-3">This amount will be billed monthly, separate from the one-time total above.</p>
+          </div>
+        )}
+
+        {split && split.length > 0 && (
+          <div className="bg-white rounded-xl border p-6 mb-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">Suggested Warehouse Split</h3>
+            <div className="space-y-4">
+              {split.map((line, index) => (
+                <div key={`split-${index}`} className="border rounded-lg p-4">
+                  <p className="font-medium text-slate-900 mb-2">{line.productName} - Qty {line.requestedQty}</p>
+                  <div className="space-y-1">
+                    {line.allocations.map((alloc, i) => (
+                      <div key={i} className="flex justify-between text-sm bg-slate-50 px-3 py-2 rounded">
+                        <span className="text-slate-700">{alloc.warehouseName}</span>
+                        <span className="font-medium text-slate-900">{alloc.qty} units</span>
+                      </div>
+                    ))}
+                    {line.backorderQty > 0 && (
+                      <div className="flex justify-between text-sm bg-red-50 px-3 py-2 rounded">
+                        <span className="text-red-700">Backorder (insufficient stock)</span>
+                        <span className="font-medium text-red-700">{line.backorderQty} units</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

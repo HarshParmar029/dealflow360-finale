@@ -1,4 +1,4 @@
-import { PrismaClient, Role, CustomerTier, ProductCategory } from "@prisma/client";
+﻿import { PrismaClient, Role, CustomerTier, ProductCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -7,6 +7,8 @@ async function main() {
 	console.log("Starting strongest seed...");
 
 	// Clean previous data
+	await prisma.stockLevel.deleteMany();
+	await prisma.warehouse.deleteMany();
 	await prisma.payment.deleteMany();
 	await prisma.negotiationComment.deleteMany();
 	await prisma.approvalLog.deleteMany();
@@ -196,13 +198,28 @@ async function main() {
 		],
 	});
 
-	console.log("✅ Seed completed successfully!");
+        // ========== WAREHOUSES + STOCK ==========
+        const mainWarehouse = await prisma.warehouse.create({ data: { name: "Main Warehouse" } });
+        const eastDepot = await prisma.warehouse.create({ data: { name: "East Depot" } });
+
+        const allProducts = [laptop, server, setup, support, cloud];
+        for (const product of allProducts) {
+                await prisma.stockLevel.create({
+                        data: { warehouseId: mainWarehouse.id, productId: product.id, quantity: Math.floor(Math.random() * 15) + 5 },
+                });
+                await prisma.stockLevel.create({
+                        data: { warehouseId: eastDepot.id, productId: product.id, quantity: Math.floor(Math.random() * 15) + 5 },
+                });
+        }
+
+
+	console.log(`\"Seed completed successfully!\"`);
 	console.log("----------------------------------------");
 	console.log("Login with password: password123");
-	console.log("Admin     → admin@dealflow360.com");
-	console.log("Manager   → manager@dealflow360.com");
-	console.log("Sales Rep → rep1@dealflow360.com");
-	console.log("Customer  → gold@dealflow360.com");
+	console.log("Admin     Ã¢â€ â€™ admin@dealflow360.com");
+	console.log("Manager   Ã¢â€ â€™ manager@dealflow360.com");
+	console.log("Sales Rep Ã¢â€ â€™ rep1@dealflow360.com");
+	console.log("Customer  Ã¢â€ â€™ gold@dealflow360.com");
 	console.log("----------------------------------------");
 }
 
@@ -214,3 +231,4 @@ main()
 	.finally(async () => {
 		await prisma.$disconnect();
 	});
+
