@@ -77,7 +77,7 @@ export default function WorkspacePage() {
         ) : (
           <div className="grid gap-4">
             {quotations.map((quotation) => (
-              <div key={quotation.id} className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition">
+              <div key={quotation.id} onClick={() => router.push(`/workspace/${quotation.id}`)} className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition cursor-pointer">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-semibold text-slate-900">{quotation.customer.name}</h3>
