@@ -147,15 +147,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const customer = session.user.role === "CUSTOMER"
+      ? await prisma.customer.findUnique({ where: { userId: session.user.id } })
+      : null;
+
+    if (session.user.role === "CUSTOMER" && !customer) {
+      return NextResponse.json({ quotations: [] });
+    }
+
     const quotations = await prisma.quotation.findMany({
       where:
         session.user.role === "SALES_REP"
           ? { repId: session.user.id }
-          : {}, // Manager/Admin see all
+          : session.user.role === "CUSTOMER"
+            ? { customerId: customer!.id }
+            : {}, // Manager/Admin see all
       include: {
         customer: true,
         rep: { select: { name: true, email: true } },
         lines: { include: { product: true } },
+        comments: { orderBy: { createdAt: "asc" } },
       },
       orderBy: { createdAt: "desc" },
     });
