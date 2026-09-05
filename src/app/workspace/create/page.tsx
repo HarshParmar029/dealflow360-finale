@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -6,8 +6,8 @@ import { useSession } from "next-auth/react";
 import AppHeader from "@/components/AppHeader";
 
 interface Customer { id: string; name: string; tier: string }
-interface Product { id: string; name: string; price: number; category: string; imageUrl?: string | null }
-interface Line { productId: string; name: string; qty: number; discountPct: number; unitPrice: number }
+interface Product { id: string; name: string; price: number; cost: number; category: string; imageUrl?: string | null }
+interface Line { productId: string; name: string; qty: number; discountPct: number; unitPrice: number; unitCost: number }
 interface UpsellSuggestion { productId: string; name: string; price: number; margin: number; promoted: boolean }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -60,7 +60,7 @@ export default function CreateQuotationPage() {
     void handleProductSelect(product.id);
     const qty = qtyMap[product.id] || 1;
     const discountPct = discountMap[product.id] || 0;
-    setLines((current) => [...current, { productId: product.id, name: product.name, qty, discountPct, unitPrice: product.price }]);
+    setLines((current) => [...current, { productId: product.id, name: product.name, qty, discountPct, unitPrice: product.price, unitCost: product.cost }]);
     setQtyMap((current) => ({ ...current, [product.id]: 1 }));
     setDiscountMap((current) => ({ ...current, [product.id]: 0 }));
   };
@@ -85,6 +85,10 @@ export default function CreateQuotationPage() {
     acc[product.category].push(product);
     return acc;
   }, {});
+
+  const cartTotal = lines.reduce((sum, line) => sum + line.unitPrice * line.qty * (1 - line.discountPct / 100), 0);
+  const cartCost = lines.reduce((sum, line) => sum + line.unitCost * line.qty, 0);
+  const cartMarginPct = cartTotal > 0 ? ((cartTotal - cartCost) / cartTotal) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -125,8 +129,59 @@ export default function CreateQuotationPage() {
           </div>
         ))}
 
-        {lines.length > 0 && <div className="bg-white p-5 rounded-xl border mb-6"><h2 className="text-lg font-semibold mb-3 text-slate-800">Cart</h2><div className="space-y-2">{lines.map((line, index) => <div key={`${line.productId}-${index}`} className="flex justify-between text-sm bg-slate-50 p-2 rounded"><span className="text-slate-800">{line.name} x {line.qty} ({line.discountPct}% off)</span><button onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))} className="text-red-500">Remove</button></div>)}</div></div>}
-        {upsellSuggestions.length > 0 && <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6"><h4 className="font-semibold text-blue-800 mb-3">Suggested Upsells</h4><div className="space-y-2">{upsellSuggestions.map((suggestion) => <div key={suggestion.productId} className="flex items-center justify-between bg-white p-3 rounded-lg"><div><p className="font-medium">{suggestion.name}</p><p className="text-sm text-slate-500">₹{suggestion.price.toLocaleString()} - Margin {suggestion.margin}% {suggestion.promoted && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Promoted</span>}</p></div><button onClick={() => setLines((current) => [...current, { productId: suggestion.productId, name: suggestion.name, qty: 1, discountPct: 0, unitPrice: suggestion.price }])} className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg">Add</button></div>)}</div></div>}
+        {lines.length > 0 && (
+          <div className="bg-white p-5 rounded-xl border mb-6">
+            <h2 className="text-lg font-semibold mb-3 text-slate-800">Cart</h2>
+            <div className="space-y-2 mb-4">
+              {lines.map((line, index) => (
+                <div key={`${line.productId}-${index}`} className="flex justify-between text-sm bg-slate-50 p-2 rounded">
+                  <span className="text-slate-800">{line.name} x {line.qty} ({line.discountPct}% off)</span>
+                  <button onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))} className="text-red-500">Remove</button>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t">
+              <div>
+                <p className="text-sm text-slate-500">Live Margin</p>
+                <p className={`text-lg font-bold ${cartMarginPct < 15 ? "text-red-600" : cartMarginPct < 30 ? "text-amber-600" : "text-green-600"}`}>
+                  {cartMarginPct.toFixed(1)}%
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-slate-500">Total</p>
+                <p className="text-2xl font-bold text-slate-900">₹{cartTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {upsellSuggestions.length > 0 && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
+            <h4 className="font-semibold text-blue-800 mb-3">Suggested Upsells</h4>
+            <div className="space-y-2">
+              {upsellSuggestions.map((suggestion) => (
+                <div key={suggestion.productId} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                  <div>
+                    <p className="font-medium">{suggestion.name}</p>
+                    <p className="text-sm text-slate-500">
+                      ₹{suggestion.price.toLocaleString()} - Margin {suggestion.margin}% {suggestion.promoted && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Promoted</span>}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const product = products.find((p) => p.id === suggestion.productId);
+                      setLines((current) => [...current, { productId: suggestion.productId, name: suggestion.name, qty: 1, discountPct: 0, unitPrice: suggestion.price, unitCost: product?.cost ?? 0 }]);
+                    }}
+                    className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg"
+                  >
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {message && <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm">{message}</div>}
         <button onClick={handleSubmit} disabled={loading} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl disabled:opacity-50">{loading ? "Creating..." : "Create Quotation"}</button>
       </div>
