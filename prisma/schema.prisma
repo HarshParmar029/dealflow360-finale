@@ -12,6 +12,7 @@ enum Role {
   MANAGER
   CUSTOMER
   ADMIN
+  FINANCE
 }
 
 enum CustomerTier {
@@ -29,6 +30,7 @@ enum ProductCategory {
 enum QuoteStatus {
   DRAFT
   PENDING_MANAGER
+  PENDING_FINANCE
   APPROVED
   REJECTED
   UNDER_NEGOTIATION
