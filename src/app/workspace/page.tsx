@@ -57,6 +57,7 @@ export default function WorkspacePage() {
             {(session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN") && (
               <button onClick={() => router.push("/approvals")} className="px-4 py-2 text-sm bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200">Pending Approvals</button>
             )}
+            <button onClick={() => router.push("/dashboard")} className="px-4 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">Dashboard</button>
             <button onClick={() => router.push("/workspace/create")} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ New Quotation</button>
             <button onClick={() => signOut({ callbackUrl: "/login" })} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Logout</button>
           </div>

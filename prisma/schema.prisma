@@ -71,6 +71,7 @@ model Product {
   category   ProductCategory
   price      Float
   cost       Float
+  imageUrl   String?
   createdAt  DateTime        @default(now())
 
   lines      QuotationLine[]

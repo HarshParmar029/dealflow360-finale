@@ -119,6 +119,7 @@ async function main() {
 			category: ProductCategory.HARDWARE,
 			price: 80000,
 			cost: 55000,
+			imageUrl: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400",
 		},
 	});
 
@@ -128,6 +129,7 @@ async function main() {
 			category: ProductCategory.HARDWARE,
 			price: 150000,
 			cost: 110000,
+			imageUrl: "https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400",
 		},
 	});
 
@@ -137,6 +139,7 @@ async function main() {
 			category: ProductCategory.SERVICE,
 			price: 20000,
 			cost: 8000,
+			imageUrl: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400",
 		},
 	});
 
@@ -146,6 +149,7 @@ async function main() {
 			category: ProductCategory.SERVICE,
 			price: 15000,
 			cost: 6000,
+			imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400",
 		},
 	});
 
@@ -155,6 +159,7 @@ async function main() {
 			category: ProductCategory.SUBSCRIPTION,
 			price: 5000,
 			cost: 2000,
+			imageUrl: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400",
 		},
 	});
 
