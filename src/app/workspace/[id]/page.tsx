@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import AppHeader from "@/components/AppHeader";
 
 interface Quotation {
   id: string;
@@ -52,7 +53,7 @@ export default function QuotationDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b"><div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between"><button onClick={() => router.push("/workspace")} className="text-sm text-blue-600">Back</button><h1 className="font-semibold">Quotation Details</h1><div className="w-12" /></div></header>
+      <AppHeader />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl border p-6 mb-6 flex justify-between items-start gap-4"><div><h2 className="text-2xl font-bold">{quotation.customer.name}</h2><p className="text-slate-500 mt-1">{quotation.customer.tier} Tier · Rep: {quotation.rep.name}</p><p className="text-sm text-slate-400 mt-1">{new Date(quotation.createdAt).toLocaleString()}</p></div><div className="text-right"><p className="text-2xl font-bold">₹{quotation.totalAmount.toLocaleString()}</p><span className={`inline-block mt-2 px-3 py-1 text-sm font-medium rounded-full ${statusClass}`}>{quotation.status}</span>{quotation.blendedRiskScore > 0 && <p className="text-sm text-amber-600 mt-2 font-medium">Risk Score: {quotation.blendedRiskScore}</p>}</div></div>
         <div className="bg-white rounded-xl border p-6 mb-6"><h3 className="font-semibold mb-4">Line Items</h3><div className="space-y-3">{quotation.lines.map((line, index) => <div key={`${line.product.name}-${index}`} className="flex justify-between items-center py-3 border-b last:border-0"><div><p className="font-medium">{line.product.name}</p><p className="text-sm text-slate-500">Qty: {line.qty} × ₹{line.unitPrice.toLocaleString()}</p></div><div className="text-right"><p className="font-medium">₹{line.lineTotal.toLocaleString()}</p>{line.discountPct > 0 && <p className="text-sm text-red-500">{line.discountPct}% discount</p>}</div></div>)}</div></div>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import AppHeader from "@/components/AppHeader";
 
 interface Quotation {
   id: string;
@@ -47,22 +48,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">DealFlow<span className="text-blue-600">360</span></h1>
-            <p className="text-sm text-slate-500">{session?.user?.name} ({session?.user?.role})</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {(session?.user?.role === "MANAGER" || session?.user?.role === "ADMIN") && (
-              <button onClick={() => router.push("/approvals")} className="px-4 py-2 text-sm bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200">Pending Approvals</button>
-            )}
-            <button onClick={() => router.push("/dashboard")} className="px-4 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">Dashboard</button>
-            <button onClick={() => router.push("/workspace/create")} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ New Quotation</button>
-            <button onClick={() => signOut({ callbackUrl: "/login" })} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900">Logout</button>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import AppHeader from "@/components/AppHeader";
 
 interface Customer { id: string; name: string; tier: string }
 interface Product { id: string; name: string; price: number; category: string; imageUrl?: string | null }
@@ -87,6 +88,7 @@ export default function CreateQuotationPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      <AppHeader />
       <div className="max-w-5xl mx-auto">
         <button onClick={() => router.push("/workspace")} className="text-sm text-blue-600 mb-4">Back to Workspace</button>
         <h1 className="text-2xl font-bold mb-6 text-slate-900">Create Quotation</h1>

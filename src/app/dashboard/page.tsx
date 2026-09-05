@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import AppHeader from "@/components/AppHeader";
 
 interface Quote { id: string; status: string; totalAmount: number; blendedRiskScore: number; createdAt: string; customer: { name: string } }
 
@@ -39,7 +40,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b sticky top-0 z-10"><div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"><div><h1 className="text-xl font-bold">DealFlow<span className="text-blue-600">360</span> - Deal Health</h1><p className="text-sm text-slate-500">{session?.user?.name}</p></div><div className="flex gap-3"><button onClick={() => router.push("/workspace")} className="px-4 py-2 text-sm bg-slate-100 rounded-lg">Workspace</button><button onClick={() => signOut({ callbackUrl: "/login" })} className="px-4 py-2 text-sm text-slate-600">Logout</button></div></div></header>
+      <AppHeader />
       <main className="max-w-6xl mx-auto px-4 py-8"><h2 className="text-2xl font-semibold mb-6">Deal Health Dashboard</h2><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">{stats.map((stat) => <div key={stat.label} className={`rounded-xl p-4 ${stat.color}`}><p className="text-sm font-medium opacity-80">{stat.label}</p><p className="text-2xl font-bold mt-1">{stat.value}</p></div>)}</div><div className="bg-white rounded-xl border p-6"><h3 className="font-semibold text-lg mb-4">High Risk Quotations</h3>{highRiskQuotes.length === 0 ? <p className="text-slate-500">No high risk deals right now</p> : <div className="space-y-3">{highRiskQuotes.slice(0, 5).map((quote) => <button key={quote.id} onClick={() => router.push(`/workspace/${quote.id}`)} className="w-full flex justify-between items-center p-3 bg-orange-50 rounded-lg text-left hover:bg-orange-100"><div><p className="font-medium">{quote.customer.name}</p><p className="text-sm text-slate-500">Risk: {quote.blendedRiskScore} - {quote.status}</p></div><p className="font-bold">₹{quote.totalAmount.toLocaleString()}</p></button>)}</div>}</div></main>
     </div>
   );

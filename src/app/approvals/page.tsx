@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import AppHeader from "@/components/AppHeader";
 
 interface Quotation {
   id: string;
@@ -82,19 +83,7 @@ export default function ApprovalsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold">DealFlow<span className="text-blue-600">360</span> - Approvals</h1>
-            <p className="text-sm text-slate-500">{session?.user?.name} ({session?.user?.role})</p>
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => router.push("/workspace")} className="px-4 py-2 text-sm bg-slate-100 rounded-lg hover:bg-slate-200">Workspace</button>
-            <button onClick={() => signOut({ callbackUrl: "/login" })} className="px-4 py-2 text-sm text-slate-600">Logout</button>
-          </div>
-        </div>
-      </header>
-
+      <AppHeader />
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-2xl font-semibold mb-2">Pending Approvals</h2>
         <p className="text-slate-500 mb-6">Quotations that exceeded discount limits and need your decision</p>
