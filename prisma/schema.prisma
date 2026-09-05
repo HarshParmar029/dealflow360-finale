@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SALES_REP
+  MANAGER
+  CUSTOMER
+  ADMIN
+}
+
+enum CustomerTier {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum ProductCategory {
+  HARDWARE
+  SERVICE
+  SUBSCRIPTION
+}
+
+enum QuoteStatus {
+  DRAFT
+  PENDING_MANAGER
+  APPROVED
+  REJECTED
+  UNDER_NEGOTIATION
+  CONFIRMED
+}
+
+enum ApprovalAction {
+  APPROVE
+  REJECT
+  RETURN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  customer     Customer?
+  repQuotes    Quotation[]     @relation("RepQuotes")
+  approvals    ApprovalLog[]
+}
+
+model Customer {
+  id        String       @id @default(cuid())
+  name      String
+  email     String?
+  tier      CustomerTier @default(BRONZE)
+  userId    String?      @unique
+  user      User?        @relation(fields: [userId], references: [id])
+  quotes    Quotation[]  @relation("CustomerQuotes")
+  createdAt DateTime     @default(now())
+}
+
+model Product {
+  id         String          @id @default(cuid())
+  name       String
+  category   ProductCategory
+  price      Float
+  cost       Float
+  createdAt  DateTime        @default(now())
+
+  lines      QuotationLine[]
+  upsellFrom UpsellRule[]    @relation("BaseProduct")
+  upsellTo   UpsellRule[]    @relation("SuggestedProduct")
+}
+
+model CategoryDiscountLimit {
+  id             String          @id @default(cuid())
+  category       ProductCategory @unique
+  maxDiscountPct Float
+}
+
+model Quotation {
+  id               String        @id @default(cuid())
+  customerId       String
+  customer         Customer      @relation("CustomerQuotes", fields: [customerId], references: [id])
+  repId            String
+  rep              User          @relation("RepQuotes", fields: [repId], references: [id])
+  status           QuoteStatus   @default(DRAFT)
+  blendedRiskScore Float         @default(0)
+  totalAmount      Float         @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  lines            QuotationLine[]
+  approvals        ApprovalLog[]
+  comments         NegotiationComment[]
+  payments         Payment[]
+}
+
+model QuotationLine {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  qty         Int       @default(1)
+  unitPrice   Float
+  discountPct Float     @default(0)
+  lineTotal   Float     @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+model ApprovalLog {
+  id          String         @id @default(cuid())
+  quotationId String
+  quotation   Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  approverId  String
+  approver    User           @relation(fields: [approverId], references: [id])
+  action      ApprovalAction
+  reason      String?
+  createdAt   DateTime       @default(now())
+}
+
+model NegotiationComment {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  authorRole  Role
+  message     String
+  counterPct  Float?
+  createdAt   DateTime  @default(now())
+}
+
+model UpsellRule {
+  id                 String  @id @default(cuid())
+  baseProductId      String
+  baseProduct        Product @relation("BaseProduct", fields: [baseProductId], references: [id])
+  suggestedProductId String
+  suggestedProduct   Product @relation("SuggestedProduct", fields: [suggestedProductId], references: [id])
+  minMargin          Float
+  promoted           Boolean @default(false)
+}
+
+model Payment {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  amount      Float
+  method      String
+  status      String    @default("PAID")
+  createdAt   DateTime  @default(now())
+}
