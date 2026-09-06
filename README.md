@@ -4,6 +4,10 @@
 
 **Odoo Hackathon 2026 — Grand Finale Submission**
 
+[![Watch the Demo] https://drive.google.com/file/d/1TycFhZC68ntNeRtuCnAGdWhSHmC7CbHm/view?usp=sharing
+
+**[Watch the full demo video here](PASTE_YOUR_VIDEO_LINK_HERE)** — see the entire flow live: automatic approval routing, customer negotiation with auto re-approval, warehouse split, and the Deal Health Dashboard, all in one walkthrough.
+
 ---
 
 ## Overview
